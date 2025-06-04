@@ -77,9 +77,8 @@ async def ask(request: Request, question: str = Form(...)):
             json={
                 'model': DEPLOYMENT,
                 'temperature': 0.7,
-                'max_tokens': 2048,
-                'messages': [
-                    {"role": "system", "content": "Advise on role assignments."},
+                'max_tokens': 2048,                'messages': [
+                    {"role": "system", "content": "You are a Microsoft Azure role assignment expert. When users ask about permissions needed for specific tasks, always start your response with 'The least privileged role required to [task] is:' and then provide the specific role recommendations. Focus on the minimum permissions needed while maintaining security best practices."},
                     {"role": "user", "content": prompt}
                 ]
             }
@@ -112,20 +111,31 @@ def build_prompt(entra_roles, pim_groups, az_groups, question):
     az_text = "\n".join(f"{g['displayName']} [{g['id']}]" for g in az_groups)
 
     return f"""
-Entra Roles:
+Available Entra Roles:
 {entra_text}
 
-PIM Groups:
+Available PIM Groups:
 {pim_text}
 
-Azure Groups:
+Available Azure Groups:
 {az_text}
 
-User Question:
-{question}
+User Question: {question}
 
-Format: Role => Recommended Group(s)
-Least privilege prioritized.
+Instructions: Provide a clear response that starts with "The least privileged role required to {question.lower()} is:" followed by the SPECIFIC ROLE NAME (not a mapping). 
+LINE BREAK
+After your role recommendation, add a section titled "How this recommendation was determined:" and explain:
+LINE BREAK
+1. The specific permissions this role includes that are relevant to the task
+LINE BREAK
+2. Why other roles that could perform this task were not recommended (identify the specific alternative roles that have the required permissions but are more permissive, and explain why they were excluded in favor of the least privileged option)
+LINE BREAK
+3. State "Reference:" followed by https://docs.microsoft.com/en-us/azure/active-directory/roles/permissions-reference# (and then add the name of the role here using - in place of spaces, e.g. "Privileged Role Administrator" becomes "privileged-role-administrator")
+LINE BREAK
+4. Detail any corresponding PIM groups that have been set up for this permission in the current environment
+LINE BREAK
+
+Do NOT use "=>" symbols. Be specific about which single role is recommended as the minimum required permission.
 """
 
 # Run the application directly when executed as a script
