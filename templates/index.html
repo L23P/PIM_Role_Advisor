@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PIM Role Advisor</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.min.css">    <style>
+        /* Override water.css for better readability */
+        body {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        /* Dark mode styles */
+        body.dark-mode {
+            background-color: #121212;
+            color: #f0f0f0;
+        }
+        
+        body.dark-mode .response-area {
+            background-color: #1e1e2e;
+            border-color: #2d3748;
+            color: #e2e8f0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        
+        body.dark-mode textarea {
+            background-color: #2d3748;
+            border-color: #4a5568;
+            color: #e2e8f0;
+        }
+        
+        body.dark-mode textarea:focus {
+            border-color: #63b3ed;
+            box-shadow: 0 0 0 3px rgba(99,179,237,0.2);
+        }
+        
+        body.dark-mode .feature-card {
+            background: #1e1e2e;
+            border-color: #2d3748;
+            color: #e2e8f0;
+        }
+        
+        body.dark-mode .feature-card h3 {
+            color: #63b3ed;
+        }
+        
+        body.dark-mode .feature-card p {
+            color: #cbd5e0;
+        }
+        
+        body.dark-mode form {
+            background: #1e1e2e;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        
+        body.dark-mode h2 {
+            color: #e2e8f0;
+        }
+        
+        .response-area {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: #ffffff;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 24px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 15px;
+            line-height: 1.7;
+            margin: 20px 0;
+            overflow-x: auto;
+            color: #212529;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+        }
+        
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 16px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 15px;
+            line-height: 1.5;
+            resize: vertical;
+            min-height: 120px;
+        }
+        
+        textarea:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 16px;
+        }
+        
+        button:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,123,255,0.2);
+        }
+        
+        .navigation {
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        
+        .navigation h1 {
+            margin: 0 0 12px 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .navigation p {
+            margin: 0 0 24px 0;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .nav-btn {
+            display: inline-block;
+            padding: 14px 28px;
+            margin: 0 8px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin: 40px 0;
+        }        .feature-card {
+            padding: 28px;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        
+        .feature-card h3 {
+            margin: 0 0 16px 0;
+            color: #007bff;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+        
+        .feature-card p {
+            color: #6c757d;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        h2 {
+            color: #2c3e50;
+            margin: 40px 0 20px 0;
+            font-size: 1.8em;
+            font-weight: 400;
+        }
+        
+        form {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+            margin: 24px 0;
+        }
+        
+        .theme-toggle {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>    <div class="navigation">
+        <button id="theme-toggle" class="theme-toggle">
+            <span id="theme-icon">🌙</span> <span id="theme-text">Dark Mode</span>
+        </button>
+        <h1>🛡️ PIM Role Advisor</h1>
+        <p>Comprehensive RBAC Analytics and AI-Powered Role Recommendations</p>
+        <a href="/analysis" class="nav-btn">📊 Analysis Dashboard</a>
+    </div>
+    
+    <div class="feature-grid">
+        <div class="feature-card">
+            <h3>🔍 Comprehensive Analysis</h3>
+            <p>Scan your entire Entra ID environment to identify security risks, over-privileged users, and optimization opportunities.</p>
+        </div>
+        <div class="feature-card">
+            <h3>🤖 AI-Powered Insights</h3>
+            <p>Get intelligent recommendations for role assignments, group optimizations, and RBAC best practices.</p>
+        </div>
+        <div class="feature-card">
+            <h3>📈 Risk Assessment</h3>
+            <p>Identify high-risk users and analyze permission patterns to improve your security posture.</p>
+        </div>
+        <div class="feature-card">
+            <h3>📊 Detailed Reports</h3>
+            <p>Export comprehensive reports with actionable recommendations for stakeholders and auditors.</p>
+        </div>
+    </div>
+    
+    <h2>💬 Ask the AI Assistant</h2>
+    <form method="post" action="/ask">
+        <textarea name="question" rows="4" placeholder="Ask your question about Azure roles and permissions..." required></textarea>
+        <button type="submit">Submit</button>
+    </form>
+    
+    {% if response %}
+        <h2>AI Recommendation:</h2>
+        <div class="response-area">{{ response }}</div>
+    {% endif %}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Theme toggling functionality
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            const themeText = document.getElementById('theme-text');
+            
+            // Check for saved theme preference or respect OS theme preference
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.body.classList.add('dark-mode');
+                themeIcon.textContent = '☀️';
+                themeText.textContent = 'Light Mode';
+            }
+            
+            // Theme toggle click handler
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+                
+                if (document.body.classList.contains('dark-mode')) {
+                    localStorage.setItem('theme', 'dark');
+                    themeIcon.textContent = '☀️';
+                    themeText.textContent = 'Light Mode';
+                } else {
+                    localStorage.setItem('theme', 'light');
+                    themeIcon.textContent = '🌙';
+                    themeText.textContent = 'Dark Mode';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

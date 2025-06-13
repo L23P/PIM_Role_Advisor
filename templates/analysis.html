@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIM Analysis Dashboard - Role Advisor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            transition: background 0.3s ease;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .back-button {
+            position: absolute;
+            left: 20px;
+            top: 30px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .back-button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        .theme-toggle {
+            position: absolute;
+            right: 20px;
+            top: 30px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        .dashboard {
+            padding: 30px;
+        }
+        
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 5px solid #007bff;
+        }
+        
+        .status-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            margin-right: 15px;
+        }
+        
+        .status-ready {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-progress {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-none {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #1e7e34;
+            transform: translateY(-2px);
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background: #117a8b;
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .results-section {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        .results-section.show {
+            display: block;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px 20px;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            border-left: 6px solid;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+        }
+        
+        .metric-card.users {
+            border-left-color: #007bff;
+            background: linear-gradient(145deg, #ffffff, #f0f7ff);
+        }
+        
+        .metric-card.groups {
+            border-left-color: #28a745;
+            background: linear-gradient(145deg, #ffffff, #f0fff5);
+        }
+        
+        .metric-card.roles {
+            border-left-color: #17a2b8;
+            background: linear-gradient(145deg, #ffffff, #f0faff);
+        }
+        
+        .metric-card.risk {
+            border-left-color: #dc3545;
+            background: linear-gradient(145deg, #ffffff, #fff5f5);
+        }
+        
+        .metric-value {
+            font-size: 3.5em;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            letter-spacing: -1px;
+        }
+        
+        .metric-label {
+            font-size: 1em;
+            color: #495057;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+        }
+        
+        body.dark-mode .metric-card {
+            box-shadow: 0 8px 15px rgba(0,0,0,0.25);
+        }
+        
+        body.dark-mode .metric-card.users {
+            background: linear-gradient(145deg, #2d3748, #2a4365);
+        }
+        
+        body.dark-mode .metric-card.groups {
+            background: linear-gradient(145deg, #2d3748, #2d3f2b);
+        }
+        
+        body.dark-mode .metric-card.roles {
+            background: linear-gradient(145deg, #2d3748, #285e6a);
+        }
+        
+        body.dark-mode .metric-card.risk {
+            background: linear-gradient(145deg, #2d3748, #442a2d);
+        }
+        
+        body.dark-mode .metric-value {
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        body.dark-mode .metric-label {
+            color: #e2e8f0;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 25px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 8px 8px 0 0;
+            overflow: hidden;
+        }
+        
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .tab.active {
+            border-bottom-color: #007bff;
+            color: #007bff;
+            background-color: rgba(0, 123, 255, 0.1);
+        }
+        
+        .tab:hover {
+            background: #f8f9fa;
+            color: #0056b3;
+        }
+        
+        body.dark-mode .tabs {
+            background-color: rgba(45, 55, 72, 0.7);
+            border-bottom-color: #4a5568;
+        }
+        
+        body.dark-mode .tab {
+            color: #e2e8f0;
+        }
+        
+        body.dark-mode .tab.active {
+            color: #63b3ed;
+            border-bottom-color: #63b3ed;
+            background-color: rgba(99, 179, 237, 0.1);
+        }
+        
+        body.dark-mode .tab:hover {
+            background: #2d3748;
+            color: #90cdf4;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        
+        .data-table th {
+            background: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            padding: 15px;
+            letter-spacing: 0.5px;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .data-table td {
+            padding: 12px 15px;
+            border-top: 1px solid #e9ecef;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: middle;
+            color: #212529;
+        }
+        
+        .data-table tbody tr:nth-child(odd) {
+            background-color: #f8f9fa;
+        }
+        
+        .data-table tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.05);
+        }
+        
+        body.dark-mode .data-table {
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        
+        body.dark-mode .data-table th {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            border-bottom-color: #4a5568;
+        }
+        
+        body.dark-mode .data-table td {
+            border-color: #4a5568;
+            color: #e2e8f0;
+        }
+        
+        body.dark-mode .data-table tbody tr:nth-child(odd) {
+            background-color: #313d4f;
+        }
+        
+        body.dark-mode .data-table tbody tr:hover {
+            background-color: rgba(99, 179, 237, 0.05);
+        }
+        
+        .risk-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .risk-high {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .risk-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .risk-low {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .recommendations-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .recommendations-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .recommendations-list li:before {
+            content: "▶";
+            position: absolute;
+            left: 0;
+            color: #007bff;
+            font-weight: bold;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        
+        .loading::after {
+            content: "";
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-left: 10px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        /* Dark mode styles */
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1c2c 0%, #4a2d69 100%);
+        }
+        
+        body.dark-mode .container {
+            background: #1e1e2e;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        body.dark-mode .header {
+            background: linear-gradient(135deg, #1a1c2c 0%, #2c3e50 100%);
+        }
+        
+        body.dark-mode .status-card {
+            background: #2d3748;
+            color: #e2e8f0;
+        }
+        
+        body.dark-mode .status-card h3 {
+            color: #e2e8f0;
+        }
+        
+        body.dark-mode .metric-card {
+            background: #2d3748;
+            color: #e2e8f0;
+        }
+        
+        body.dark-mode .table {
+            border-color: #4a5568;
+            color: #e2e8f0;
+        }
+        
+        body.dark-mode .table th {
+            background-color: #2d3748;
+            color: #e2e8f0;
+        }
+        
+        body.dark-mode .table td {
+            border-color: #4a5568;
+        }
+        
+        body.dark-mode .table tbody tr:nth-child(odd) {
+            background-color: #313d4f;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        body.dark-mode .tab-content {
+            background-color: #1e1e2e;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        @media (max-width: 768px) {
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="/" class="back-button">
+                <span>&#8592;</span> Back
+            </a>
+            <button id="theme-toggle" class="theme-toggle">
+                <span id="theme-icon">🌙</span> <span id="theme-text">Dark Mode</span>
+            </button>
+            <h1>PIM Role Analysis Dashboard</h1>
+            <p>Privileged Identity Management Role Analysis and Recommendations</p>
+        </div>
+        
+        <div class="dashboard">
+            <div class="status-card">
+                <h3>Analysis Status</h3>
+                <div id="status-content">
+                    <span id="status-indicator" class="status-indicator status-none">No Analysis</span>
+                    <span id="status-text">No analysis has been performed yet.</span>
+                </div>
+                
+                <div class="action-buttons">
+                    <button id="start-analysis" class="btn btn-primary">
+                        🔍 Start Comprehensive Analysis
+                    </button>
+                    <button id="refresh-status" class="btn btn-info">
+                        🔄 Refresh Status
+                    </button>
+                    <button id="view-results" class="btn btn-success" disabled>
+                        📊 View Results
+                    </button>
+                    <button id="export-results" class="btn btn-warning" disabled>
+                        💾 Export Report
+                    </button>
+                </div>
+            </div>
+            
+            <div id="results-section" class="results-section">
+                <div id="metrics-grid" class="metrics-grid">
+                    <!-- Metrics will be populated by JavaScript -->
+                </div>                  <div class="tabs">
+                    <div class="tab active" data-tab="overview"><span style="font-size: 1.2em;">📈</span> Overview</div>
+                    <div class="tab" data-tab="users"><span style="font-size: 1.2em;">👥</span> Users</div>
+                    <div class="tab" data-tab="groups"><span style="font-size: 1.2em;">🏢</span> Groups</div>
+                    <div class="tab" data-tab="roles"><span style="font-size: 1.2em;">🔑</span> Roles</div>
+                    <div class="tab" data-tab="recommendations"><span style="font-size: 1.2em;">💡</span> Recommendations</div>
+                </div>
+                
+                <div id="overview-tab" class="tab-content active">
+                    <div id="overview-content">
+                        <!-- Overview content will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div id="users-tab" class="tab-content">
+                    <div id="users-content">
+                        <!-- Users content will be populated by JavaScript -->
+                    </div>
+                </div>
+                  <div id="groups-tab" class="tab-content">
+                    <div id="groups-content">
+                        <!-- Groups content will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div id="roles-tab" class="tab-content">
+                    <div id="roles-content">
+                        <!-- Roles content will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div id="recommendations-tab" class="tab-content">
+                    <div id="recommendations-content">
+                        <!-- Recommendations content will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        class PIMDashboard {
+            constructor() {
+                this.statusCheckInterval = null;
+                this.initializeEventListeners();
+                this.checkStatus();
+            }
+            
+            initializeEventListeners() {
+                document.getElementById('start-analysis').addEventListener('click', () => this.startAnalysis());
+                document.getElementById('refresh-status').addEventListener('click', () => this.checkStatus());
+                document.getElementById('view-results').addEventListener('click', () => this.loadResults());
+                document.getElementById('export-results').addEventListener('click', () => this.exportResults());
+                
+                // Tab switching
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab));
+                });
+                
+                // Back button
+                document.querySelector('.back-button').addEventListener('click', () => this.goBack());
+                
+                // Theme toggle
+                document.querySelector('.theme-toggle').addEventListener('click', () => this.toggleTheme());
+            }
+            
+            async startAnalysis() {
+                const startBtn = document.getElementById('start-analysis');
+                startBtn.disabled = true;
+                startBtn.textContent = '🔄 Starting Analysis...';
+                
+                try {
+                    const response = await fetch('/analysis/start', {
+                        method: 'POST'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'started') {
+                        this.showMessage('Analysis started successfully! This may take several minutes.', 'success');
+                        this.startStatusPolling();
+                    } else {
+                        this.showMessage(`Failed to start analysis: ${result.message}`, 'error');
+                        startBtn.disabled = false;
+                        startBtn.textContent = '🔍 Start Comprehensive Analysis';
+                    }
+                } catch (error) {
+                    this.showMessage(`Error starting analysis: ${error.message}`, 'error');
+                    startBtn.disabled = false;
+                    startBtn.textContent = '🔍 Start Comprehensive Analysis';
+                }
+            }
+            
+            async checkStatus() {
+                try {
+                    const response = await fetch('/analysis/status');
+                    const status = await response.json();
+                    
+                    this.updateStatusDisplay(status);
+                    
+                    if (status.in_progress) {
+                        this.startStatusPolling();
+                    } else {
+                        this.stopStatusPolling();
+                    }
+                    
+                } catch (error) {
+                    console.error('Error checking status:', error);
+                }
+            }
+            
+            updateStatusDisplay(status) {
+                const indicator = document.getElementById('status-indicator');
+                const text = document.getElementById('status-text');
+                const startBtn = document.getElementById('start-analysis');
+                const viewBtn = document.getElementById('view-results');
+                const exportBtn = document.getElementById('export-results');
+                
+                if (status.in_progress) {
+                    indicator.className = 'status-indicator status-progress';
+                    indicator.textContent = 'In Progress';
+                    text.textContent = 'Analysis is currently running. Please wait...';
+                    startBtn.disabled = true;
+                    startBtn.textContent = '🔄 Analysis Running...';
+                    viewBtn.disabled = true;
+                    exportBtn.disabled = true;
+                } else if (status.has_results) {
+                    indicator.className = 'status-indicator status-ready';
+                    indicator.textContent = 'Ready';
+                    text.textContent = `Last analysis completed: ${new Date(status.last_analysis).toLocaleString()}`;
+                    startBtn.disabled = false;
+                    startBtn.textContent = '🔍 Run New Analysis';
+                    viewBtn.disabled = false;
+                    exportBtn.disabled = false;
+                } else {
+                    indicator.className = 'status-indicator status-none';
+                    indicator.textContent = 'No Analysis';
+                    text.textContent = 'No analysis has been performed yet.';
+                    startBtn.disabled = false;
+                    startBtn.textContent = '🔍 Start Comprehensive Analysis';
+                    viewBtn.disabled = true;
+                    exportBtn.disabled = true;
+                }
+            }
+            
+            startStatusPolling() {
+                if (this.statusCheckInterval) return;
+                
+                this.statusCheckInterval = setInterval(() => {
+                    this.checkStatus();
+                }, 5000); // Check every 5 seconds
+            }
+            
+            stopStatusPolling() {
+                if (this.statusCheckInterval) {
+                    clearInterval(this.statusCheckInterval);
+                    this.statusCheckInterval = null;
+                }
+            }
+            
+            async loadResults() {
+                try {
+                    const response = await fetch('/analysis/results');
+                    const results = await response.json();
+                    
+                    this.displayResults(results);
+                    document.getElementById('results-section').classList.add('show');
+                    
+                } catch (error) {
+                    this.showMessage(`Error loading results: ${error.message}`, 'error');
+                }
+            }
+              displayResults(results) {
+                this.displayMetrics(results.summary, results.analysis_type);
+                this.displayOverview(results);
+                
+                if (results.analysis_type === 'full') {
+                    this.displayUsers(results.high_risk_users);
+                    this.displayGroups(results.group_insights);
+                } else {
+                    this.displaySimpleGroups(results.group_insights);
+                    this.displayRoles(results.roles_analysis);
+                }
+                
+                this.displayRecommendations(results.recommendations, results.limitations);
+            }
+              displayMetrics(summary, analysisType) {
+                const metricsGrid = document.getElementById('metrics-grid');
+                
+                if (analysisType === 'simple') {
+                    metricsGrid.innerHTML = `
+                        <div class="metric-card groups">
+                            <div class="metric-value">${summary.total_groups}</div>
+                            <div class="metric-label">Total Groups</div>
+                        </div>
+                        <div class="metric-card roles">
+                            <div class="metric-value">${summary.total_roles}</div>
+                            <div class="metric-label">Total Roles</div>
+                        </div>
+                        <div class="metric-card users">
+                            <div class="metric-value">${summary.pim_groups}</div>
+                            <div class="metric-label">PIM Groups</div>
+                        </div>
+                        <div class="metric-card risk">
+                            <div class="metric-value">${summary.role_groups}</div>
+                            <div class="metric-label">Role Groups</div>
+                        </div>
+                    `;
+                } else {
+                    metricsGrid.innerHTML = `
+                        <div class="metric-card users">
+                            <div class="metric-value">${summary.total_users}</div>
+                            <div class="metric-label">Total Users</div>
+                        </div>
+                        <div class="metric-card groups">
+                            <div class="metric-value">${summary.total_groups}</div>
+                            <div class="metric-label">Total Groups</div>
+                        </div>
+                        <div class="metric-card roles">
+                            <div class="metric-value">${summary.total_role_assignments}</div>
+                            <div class="metric-label">Role Assignments</div>
+                        </div>
+                        <div class="metric-card risk">
+                            <div class="metric-value">${summary.high_risk_users}</div>
+                            <div class="metric-label">High Risk Users</div>
+                        </div>
+                    `;
+                }
+            }
+              displayOverview(results) {
+                const overviewContent = document.getElementById('overview-content');
+                
+                if (results.analysis_type === 'simple') {
+                    overviewContent.innerHTML = `
+                        <div class="status-card">
+                            <h3>📊 Environment Summary (Limited Permissions)</h3>
+                            <ul class="recommendations-list">
+                                <li><strong>Analysis Type:</strong> ${results.summary.scan_type}</li>
+                                <li><strong>Total Groups:</strong> ${results.summary.total_groups}</li>
+                                <li><strong>Total Roles:</strong> ${results.summary.total_roles}</li>
+                                <li><strong>PIM Groups:</strong> ${results.summary.pim_groups}</li>
+                                <li><strong>Role Groups:</strong> ${results.summary.role_groups}</li>
+                            </ul>
+                        </div>
+                        
+                        ${results.limitations ? `
+                        <div class="status-card">
+                            <h3>⚠️ Analysis Limitations</h3>
+                            <ul class="recommendations-list">
+                                ${results.limitations.map(limitation => `<li>${limitation}</li>`).join('')}
+                            </ul>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="status-card">
+                            <h3>🎯 Key Recommendations</h3>
+                            <ul class="recommendations-list">
+                                ${results.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                } else {
+                    overviewContent.innerHTML = `
+                        <div class="status-card">
+                            <h3>📊 Environment Summary</h3>
+                            <ul class="recommendations-list">
+                                <li><strong>Total Users:</strong> ${results.summary.total_users}</li>
+                                <li><strong>Total Groups:</strong> ${results.summary.total_groups}</li>
+                                <li><strong>High Risk Users:</strong> ${results.summary.high_risk_users}</li>
+                                <li><strong>Medium Risk Users:</strong> ${results.summary.medium_risk_users}</li>
+                                <li><strong>Low Risk Users:</strong> ${results.summary.low_risk_users}</li>
+                                <li><strong>Over-Privileged Users:</strong> ${results.over_privileged_users.length}</li>
+                                <li><strong>Orphaned Permissions:</strong> ${results.orphaned_permissions_count}</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="status-card">
+                            <h3>🎯 Key Recommendations</h3>
+                            <ul class="recommendations-list">
+                                ${results.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+            }
+            
+            displayUsers(users) {
+                const usersContent = document.getElementById('users-content');
+                
+                if (users.length === 0) {
+                    usersContent.innerHTML = '<p>No high-risk users identified.</p>';
+                    return;
+                }
+                
+                usersContent.innerHTML = `
+                    <h3>👥 High-Risk Users</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Risk Level</th>
+                                <th>Active Roles</th>
+                                <th>Eligible Roles</th>
+                                <th>Recommendations</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${users.map(user => `
+                                <tr>
+                                    <td>${user.name}</td>
+                                    <td>${user.email}</td>
+                                    <td><span class="risk-badge risk-${user.risk_level.toLowerCase()}">${user.risk_level}</span></td>
+                                    <td>${user.active_roles_count}</td>
+                                    <td>${user.eligible_roles_count}</td>
+                                    <td>
+                                        <ul style="margin: 0; padding-left: 20px;">
+                                            ${user.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                                        </ul>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+            
+            displayGroups(groups) {
+                const groupsContent = document.getElementById('groups-content');
+                
+                if (groups.length === 0) {
+                    groupsContent.innerHTML = '<p>No group optimization opportunities identified.</p>';
+                    return;
+                }
+                
+                groupsContent.innerHTML = `
+                    <h3>🏢 Groups Requiring Attention</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Group Name</th>
+                                <th>Members</th>
+                                <th>Roles</th>
+                                <th>Usage Score</th>
+                                <th>Recommendations</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${groups.map(group => `
+                                <tr>
+                                    <td>${group.name}</td>
+                                    <td>${group.members_count}</td>
+                                    <td>${group.roles_count}</td>
+                                    <td>${(group.usage_score * 100).toFixed(1)}%</td>                                    <td>
+                                        <ul style="margin: 0; padding-left: 20px;">
+                                            ${group.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                                        </ul>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+            
+            displaySimpleGroups(groups) {
+                const groupsContent = document.getElementById('groups-content');
+                
+                if (!groups || groups.length === 0) {
+                    groupsContent.innerHTML = '<p>No groups found.</p>';
+                    return;
+                }
+                
+                groupsContent.innerHTML = `
+                    <h3>🏢 Groups Overview</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Group Name</th>
+                                <th>Members</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${groups.map(group => `
+                                <tr>
+                                    <td>${group.name || group.displayName || 'Unknown'}</td>
+                                    <td>${group.members_count || group.memberCount || 0}</td>
+                                    <td>${group.type || 'Standard'}</td>
+                                    <td>${group.description || 'No description available'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+            
+            displayRoles(roles) {
+                const rolesContent = document.getElementById('roles-content');
+                
+                if (!roles || roles.length === 0) {
+                    rolesContent.innerHTML = '<p>No roles analysis available.</p>';
+                    return;
+                }
+                
+                rolesContent.innerHTML = `
+                    <h3>🔑 Roles Analysis</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Role Name</th>
+                                <th>Assignment Count</th>
+                                <th>Risk Level</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${roles.map(role => `
+                                <tr>
+                                    <td>${role.name || role.displayName || 'Unknown'}</td>
+                                    <td>${role.assignment_count || role.assignmentCount || 0}</td>
+                                    <td>${role.risk_level || role.riskLevel || 'Low'}</td>
+                                    <td>${role.notes || 'No additional notes'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+            
+            displayRecommendations(recommendations, limitations) {
+                const recContent = document.getElementById('recommendations-content');
+                let content = `
+                    <div class="status-card">
+                        <h3>💡 Recommendations</h3>
+                        <ul class="recommendations-list">
+                            ${recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                
+                if (limitations && limitations.length > 0) {
+                    content += `
+                        <div class="status-card">
+                            <h3>⚠️ Analysis Limitations</h3>
+                            <ul class="recommendations-list">
+                                ${limitations.map(limitation => `<li>${limitation}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+                recContent.innerHTML = content;
+            }
+            
+            switchTab(tabName) {
+                // Update tab buttons
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+                
+                // Update tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(`${tabName}-tab`).classList.add('active');
+            }
+            
+            async exportResults() {
+                try {
+                    const response = await fetch('/analysis/export');
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        this.showMessage(`Report exported successfully: ${result.filename}`, 'success');
+                    } else {
+                        this.showMessage(`Export failed: ${result.message}`, 'error');
+                    }
+                } catch (error) {
+                    this.showMessage(`Error exporting results: ${error.message}`, 'error');
+                }
+            }
+            
+            goBack() {
+                // Implement the back navigation logic here
+                window.history.back();
+            }
+            
+            toggleTheme() {
+                const body = document.body;
+                body.classList.toggle('dark-mode');
+                
+                const isDarkMode = body.classList.contains('dark-mode');
+                
+                // Update styles for dark mode
+                body.style.backgroundColor = isDarkMode ? '#121212' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                body.style.color = isDarkMode ? '#e0e0e0' : '#333';
+                
+                // Update header styles
+                const header = document.querySelector('.header');
+                header.style.background = isDarkMode ? '#1f1f1f' : 'linear-gradient(135deg, #2c3e50 0%, #3498db 100%)';
+                
+                // Update card styles
+                const cards = document.querySelectorAll('.status-card, .metric-card, .data-table, .recommendations-list');
+                cards.forEach(card => {
+                    card.style.background = isDarkMode ? '#2c2c2c' : 'white';
+                    card.style.color = isDarkMode ? '#e0e0e0' : '#333';
+                });
+                
+                // Update button styles
+                const buttons = document.querySelectorAll('.btn, .back-button, .theme-toggle');
+                buttons.forEach(btn => {
+                    btn.style.background = isDarkMode ? '#007bff' : '#007bff';
+                    btn.style.color = isDarkMode ? 'white' : 'white';
+                });
+                
+                // Update table styles
+                const tables = document.querySelectorAll('.data-table th');
+                tables.forEach(th => {
+                    th.style.background = isDarkMode ? '#3a3a3a' : '#f8f9fa';
+                    th.style.color = isDarkMode ? '#e0e0e0' : '#495057';
+                });
+            }
+            
+            showMessage(message, type) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = type;
+                messageDiv.textContent = message;
+                
+                const dashboard = document.querySelector('.dashboard');
+                dashboard.insertBefore(messageDiv, dashboard.firstChild);
+                
+                setTimeout(() => {
+                    messageDiv.remove();
+                }, 5000);
+            }
+        }
+        
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new PIMDashboard();
+            
+            // Theme toggling functionality
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            const themeText = document.getElementById('theme-text');
+            
+            // Check for saved theme preference or respect OS theme preference
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.body.classList.add('dark-mode');
+                themeIcon.textContent = '☀️';
+                themeText.textContent = 'Light Mode';
+            }
+            
+            // Theme toggle click handler
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+                
+                if (document.body.classList.contains('dark-mode')) {
+                    localStorage.setItem('theme', 'dark');
+                    themeIcon.textContent = '☀️';
+                    themeText.textContent = 'Light Mode';
+                } else {
+                    localStorage.setItem('theme', 'light');
+                    themeIcon.textContent = '🌙';
+                    themeText.textContent = 'Dark Mode';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
