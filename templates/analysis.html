@@ -412,156 +412,62 @@
             background-color: rgba(99, 179, 237, 0.05);
         }
         
+        body.dark-mode .tab-content {
+            background-color: #1e1e2e;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        /* Improve text visibility in tab content */
+        .tab-content p {
+            color: #495057;
+            font-size: 1.1em;
+            padding: 20px;
+            text-align: center;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: 500;
+        }
+        
+        .tab-content h3 {
+            color: #2c3e50;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        body.dark-mode .tab-content p {
+            color: #e2e8f0;
+            background: #2d3748;
+            border: 1px solid #4a5568;
+        }
+        
+        body.dark-mode .tab-content h3 {
+            color: #ffffff;
+        }
+        
+        /* Risk badge styling */
         .risk-badge {
             padding: 4px 8px;
-            border-radius: 4px;
+            border-radius: 12px;
             font-size: 0.8em;
-            font-weight: bold;
+            font-weight: 600;
             text-transform: uppercase;
         }
         
         .risk-high {
-            background: #f8d7da;
-            color: #721c24;
+            background-color: #dc3545;
+            color: white;
         }
         
         .risk-medium {
-            background: #fff3cd;
-            color: #856404;
+            background-color: #ffc107;
+            color: #212529;
         }
         
         .risk-low {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .recommendations-list {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .recommendations-list li {
-            padding: 12px 0;
-            border-bottom: 1px solid #eee;
-            position: relative;
-            padding-left: 30px;
-        }
-        
-        .recommendations-list li:before {
-            content: "▶";
-            position: absolute;
-            left: 0;
-            color: #007bff;
-            font-weight: bold;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #6c757d;
-        }
-        
-        .loading::after {
-            content: "";
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            margin-left: 10px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #007bff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 10px 0;
-        }
-        
-        .success {
-            background: #d4edda;
-            color: #155724;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 10px 0;
-        }
-        
-        /* Dark mode styles */
-        body.dark-mode {
-            background: linear-gradient(135deg, #1a1c2c 0%, #4a2d69 100%);
-        }
-        
-        body.dark-mode .container {
-            background: #1e1e2e;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-        }
-        
-        body.dark-mode .header {
-            background: linear-gradient(135deg, #1a1c2c 0%, #2c3e50 100%);
-        }
-        
-        body.dark-mode .status-card {
-            background: #2d3748;
-            color: #e2e8f0;
-        }
-        
-        body.dark-mode .status-card h3 {
-            color: #e2e8f0;
-        }
-        
-        body.dark-mode .metric-card {
-            background: #2d3748;
-            color: #e2e8f0;
-        }
-        
-        body.dark-mode .table {
-            border-color: #4a5568;
-            color: #e2e8f0;
-        }
-        
-        body.dark-mode .table th {
-            background-color: #2d3748;
-            color: #e2e8f0;
-        }
-        
-        body.dark-mode .table td {
-            border-color: #4a5568;
-        }
-        
-        body.dark-mode .table tbody tr:nth-child(odd) {
-            background-color: #313d4f;
-        }
-        
-        .tab-content {
-            display: none;
-            padding: 20px;
-            background-color: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
-        }
-        
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        body.dark-mode .tab-content {
-            background-color: #1e1e2e;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            background-color: #28a745;
+            color: white;
         }
         
         @media (max-width: 768px) {
@@ -799,9 +705,8 @@
               displayResults(results) {
                 this.displayMetrics(results.summary, results.analysis_type);
                 this.displayOverview(results);
-                
-                if (results.analysis_type === 'full') {
-                    this.displayUsers(results.high_risk_users);
+                  if (results.analysis_type === 'full') {
+                    this.displayUsers(results.high_risk_users || results.users);
                     this.displayGroups(results.group_insights);
                 } else {
                     this.displaySimpleGroups(results.group_insights);
@@ -909,12 +814,11 @@
                     `;
                 }
             }
-            
-            displayUsers(users) {
+              displayUsers(users) {
                 const usersContent = document.getElementById('users-content');
                 
-                if (users.length === 0) {
-                    usersContent.innerHTML = '<p>No high-risk users identified.</p>';
+                if (!users || users.length === 0) {
+                    usersContent.innerHTML = '<p>✅ No high-risk users identified. This is good news for your security posture!</p>';
                     return;
                 }
                 
@@ -950,12 +854,11 @@
                     </table>
                 `;
             }
-            
-            displayGroups(groups) {
+              displayGroups(groups) {
                 const groupsContent = document.getElementById('groups-content');
                 
-                if (groups.length === 0) {
-                    groupsContent.innerHTML = '<p>No group optimization opportunities identified.</p>';
+                if (!groups || groups.length === 0) {
+                    groupsContent.innerHTML = '<p>ℹ️ No group optimization opportunities identified at this time.</p>';
                     return;
                 }
                 
@@ -988,12 +891,11 @@
                     </table>
                 `;
             }
-            
-            displaySimpleGroups(groups) {
+              displaySimpleGroups(groups) {
                 const groupsContent = document.getElementById('groups-content');
                 
                 if (!groups || groups.length === 0) {
-                    groupsContent.innerHTML = '<p>No groups found.</p>';
+                    groupsContent.innerHTML = '<p>ℹ️ No groups found in the current analysis.</p>';
                     return;
                 }
                 
@@ -1021,12 +923,11 @@
                     </table>
                 `;
             }
-            
-            displayRoles(roles) {
+              displayRoles(roles) {
                 const rolesContent = document.getElementById('roles-content');
                 
                 if (!roles || roles.length === 0) {
-                    rolesContent.innerHTML = '<p>No roles analysis available.</p>';
+                    rolesContent.innerHTML = '<p>ℹ️ No roles analysis available. Run a comprehensive analysis to see detailed role information.</p>';
                     return;
                 }
                 
