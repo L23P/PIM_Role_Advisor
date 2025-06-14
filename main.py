@@ -2,12 +2,13 @@ import os
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from auth import get_token_interactive
 from analysis_routes import router as analysis_router
+from prompts import get_role_recommendation_prompt, get_role_recommendation_system_message
 import aiohttp
 import requests
+import asyncio
 
 # Load environment variables from .env file
 load_dotenv()
@@ -29,7 +30,7 @@ app = FastAPI(
 # Configure templates directory
 templates = Jinja2Templates(directory="templates")
 
-# Include analysis routes
+# Include analysis routes - TESTING IF ROUTER REGISTRATION WORKS
 app.include_router(analysis_router)
 
 @app.get("/", response_class=HTMLResponse)
@@ -57,15 +58,19 @@ async def ask(request: Request, question: str = Form(...)):
             return templates.TemplateResponse("index.html", {
                 "request": request, 
                 "response": f"Authentication failed. Please try again.\n\nError: {error_details}"
-            })
-
-        # Query Microsoft Graph API
+            })        # Query Microsoft Graph API with timeout and better error handling
         print("Querying Microsoft Graph API...")
-        async with aiohttp.ClientSession(headers=headers) as session:
+        timeout = aiohttp.ClientTimeout(total=30)  # 30 second timeout
+        async with aiohttp.ClientSession(headers=headers, timeout=timeout) as session:
             try:
-                entra_roles_resp = await session.get("https://graph.microsoft.com/beta/roleManagement/directory/roleDefinitions")
-                pim_groups_resp = await session.get("https://graph.microsoft.com/v1.0/groups?$filter=startswith(displayName,'PIM-Entra')")
-                az_groups_resp = await session.get("https://graph.microsoft.com/v1.0/groups?$filter=startswith(displayName,'PIM-AzRes-')")                # Check response status
+                # Use asyncio.gather for concurrent requests
+                entra_roles_task = session.get("https://graph.microsoft.com/beta/roleManagement/directory/roleDefinitions")
+                pim_groups_task = session.get("https://graph.microsoft.com/v1.0/groups?$filter=startswith(displayName,'PIM-Entra')")
+                az_groups_task = session.get("https://graph.microsoft.com/v1.0/groups?$filter=startswith(displayName,'PIM-AzRes-')")
+                
+                entra_roles_resp, pim_groups_resp, az_groups_resp = await asyncio.gather(
+                    entra_roles_task, pim_groups_task, az_groups_task
+                )
                 if entra_roles_resp.status != 200 or pim_groups_resp.status != 200 or az_groups_resp.status != 200:
                     print(f"API error: Entra: {entra_roles_resp.status}, PIM: {pim_groups_resp.status}, Azure: {az_groups_resp.status}")
                     error_text = await entra_roles_resp.text()
@@ -80,9 +85,8 @@ async def ask(request: Request, question: str = Form(...)):
             except Exception as api_error:
                 print(f"API request failed: {str(api_error)}")
                 raise Exception(f"Error querying Microsoft Graph API: {str(api_error)}")
-        
-        # Build the prompt for Azure OpenAI
-        prompt = build_prompt(entra_roles, pim_groups, az_groups, question)
+          # Build the prompt for Azure OpenAI
+        prompt = get_role_recommendation_prompt(entra_roles, pim_groups, az_groups, question)
         print("Sending request to Azure OpenAI...")
         
         response = requests.post(
@@ -91,11 +95,13 @@ async def ask(request: Request, question: str = Form(...)):
             json={
                 'model': DEPLOYMENT,
                 'temperature': 0.7,
-                'max_tokens': 2048,                'messages': [
-                    {"role": "system", "content": "You are a Microsoft Azure role assignment expert. When users ask about permissions needed for specific tasks, always start your response with 'The least privileged role required to [task] is:' and then provide the specific role recommendations. Focus on the minimum permissions needed while maintaining security best practices."},
+                'max_tokens': 2048,
+                'messages': [
+                    {"role": "system", "content": get_role_recommendation_system_message()},
                     {"role": "user", "content": prompt}
                 ]
-            }
+            },
+            timeout=30  # Add timeout to prevent hanging
         )
         
         if response.status_code != 200:
@@ -122,39 +128,6 @@ async def ask(request: Request, question: str = Form(...)):
 @app.get("/test")
 async def test():
     return {"message": "Server is working!", "status": "ok"}
-
-def build_prompt(entra_roles, pim_groups, az_groups, question):
-    entra_text = "\n".join(f"{r['displayName']} [{r['id']}]" for r in entra_roles)
-    pim_text = "\n".join(f"{g['displayName']} [{g['id']}]" for g in pim_groups)
-    az_text = "\n".join(f"{g['displayName']} [{g['id']}]" for g in az_groups)
-
-    return f"""
-Available Entra Roles:
-{entra_text}
-
-Available PIM Groups:
-{pim_text}
-
-Available Azure Groups:
-{az_text}
-
-User Question: {question}
-
-Instructions: Provide a clear response that starts with "The least privileged role required to {question.lower()} is:" followed by the SPECIFIC ROLE NAME (not a mapping). 
-LINE BREAK
-After your role recommendation, add a section titled "How this recommendation was determined:" and explain:
-LINE BREAK
-1. The specific permissions this role includes that are relevant to the task
-LINE BREAK
-2. Why other roles that could perform this task were not recommended (identify the specific alternative roles that have the required permissions but are more permissive, and explain why they were excluded in favor of the least privileged option)
-LINE BREAK
-3. State "Reference:" followed by https://docs.microsoft.com/en-us/azure/active-directory/roles/permissions-reference# (and then add the name of the role here using - in place of spaces, e.g. "Privileged Role Administrator" becomes "privileged-role-administrator")
-LINE BREAK
-4. Detail any corresponding PIM groups that have been set up for this permission in the current environment
-LINE BREAK
-
-Do NOT use "=>" symbols. Be specific about which single role is recommended as the minimum required permission.
-"""
 
 # Run the application directly when executed as a script
 if __name__ == "__main__":

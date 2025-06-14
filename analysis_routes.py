@@ -1,13 +1,6 @@
-"""
-FastAPI routes for advanced PIM analysis features
-"""
-
 from fastapi import APIRouter, Request, HTTPException, BackgroundTasks
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-import asyncio
-import json
-from datetime import datetime
 from typing import Optional
 
 from auth import get_token_interactive
@@ -37,12 +30,20 @@ async def start_analysis(background_tasks: BackgroundTasks):
     if analysis_in_progress:
         raise HTTPException(status_code=400, detail="Analysis already in progress")
     
+    # Check if we have a cached token first
+    from auth import get_cached_token
+    cached_token = get_cached_token()
+    
+    if not cached_token:
+        return {
+            "status": "error", 
+            "message": "No authentication token available. Please authenticate first.",
+            "require_auth": True
+        }
+    
     try:
-        # Get authentication token
-        token = get_token_interactive()
-        
-        # Start analysis in background
-        background_tasks.add_task(run_analysis, token)
+        # Start analysis in background with cached token
+        background_tasks.add_task(run_analysis, cached_token)
         analysis_in_progress = True
         
         return {"status": "started", "message": "Analysis started in background"}
@@ -260,6 +261,65 @@ async def export_analysis():
             "message": f"Export failed: {str(e)}"
         }
 
+@router.get("/auth/status")
+async def auth_status():
+    """Check if we have a valid cached token"""
+    from auth import get_cached_token
+    cached_token = get_cached_token()
+    return {
+        "authenticated": cached_token is not None,
+        "message": "Token available" if cached_token else "No valid token available"
+    }
+
+@router.post("/auth/authenticate")
+async def authenticate_user():
+    """Trigger authentication process"""
+    print("=== WEB AUTHENTICATION REQUEST RECEIVED ===")
+    try:
+        print("Step 1: Importing authentication module...")
+        from auth import get_cached_token
+        
+        # First check if we already have a cached token
+        cached_token = get_cached_token()
+        if cached_token:
+            print("Step 2: Found valid cached token, no authentication needed")
+            return {
+                "status": "success",
+                "message": "Already authenticated with cached token",
+                "token_length": len(cached_token)
+            }
+        
+        print("Step 2: No cached token found, starting interactive authentication...")
+        print("IMPORTANT: Check the console/terminal for authentication code!")
+        
+        from auth import get_token_interactive
+        print("Step 3: Starting token acquisition process...")
+        print("NOTE: This will display an authentication code in the console.")
+        print("You need to:")
+        print("1. Look at the console/terminal where this server is running")
+        print("2. Copy the authentication code shown there")
+        print("3. Visit the URL provided in the console")
+        print("4. Enter the code to complete authentication")
+        
+        token = get_token_interactive()
+        
+        print(f"Step 4: Authentication completed! Token length: {len(token) if token else 0}")
+        
+        return {
+            "status": "success",
+            "message": "Authentication successful! Check console for any authentication codes.",
+            "token_length": len(token) if token else 0
+        }
+    except Exception as e:
+        print(f"=== AUTHENTICATION FAILED ===")
+        print(f"Error: {str(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        return {
+            "status": "error",
+            "message": f"Authentication failed: {str(e)}. Check console for details."
+        }
+
 async def run_analysis(token: str):
     """Background task to run the PIM analysis"""
     global latest_analysis, analysis_in_progress
@@ -302,3 +362,29 @@ async def run_analysis(token: str):
     finally:
         analysis_in_progress = False
         print("=== ANALYSIS PROCESS FINISHED ===")
+
+async def run_analysis_with_auth():
+    """Background task to authenticate and run the PIM analysis"""
+    global latest_analysis, analysis_in_progress
+    
+    try:
+        print("=== STARTING COMPREHENSIVE AI-POWERED PIM ANALYSIS ===")
+        
+        print("Step 1: Getting authentication token...")
+        token = get_token_interactive()
+        print(f"Step 2: Token obtained successfully (length: {len(token) if token else 'No token'})")
+        
+        # Now run the actual analysis
+        await run_analysis(token)
+        
+    except Exception as e:
+        import traceback
+        print(f"=== AUTHENTICATION OR ANALYSIS FAILED ===")
+        print(f"Error: {str(e)}")
+        print(f"Traceback: {traceback.format_exc()}")
+        print("Please ensure you have:")
+        print("- Proper Azure AD app registration")
+        print("- Required permissions: Directory.Read.All, RoleManagement.Read.Directory, etc.")
+        print("- Global Administrator, Global Reader, or Security Reader role")
+        latest_analysis = None
+        analysis_in_progress = False

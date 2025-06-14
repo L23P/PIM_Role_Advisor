@@ -15,6 +15,7 @@ from typing import Dict, List, Any, Tuple, Optional
 from dataclasses import dataclass, asdict
 import logging
 from dotenv import load_dotenv
+from prompts import get_user_analysis_prompt, get_group_analysis_prompt, get_global_analysis_prompt, get_system_message
 
 # Load environment variables
 load_dotenv()
@@ -44,27 +45,26 @@ class AIRecommendationEngine:
         else:
             self.enabled = True
             self.uri = f"{self.endpoint}/openai/deployments/{self.deployment}/chat/completions?api-version={self.api_version}"
-    
-    def generate_user_recommendations(self, user_analysis: Dict, context: Dict = None) -> List[str]:
+    def generate_user_recommendations(self, user_analysis: Dict, context: Optional[Dict] = None) -> List[str]:
         """Generate AI-powered recommendations for a specific user"""
         if not self.enabled:
             return self._fallback_user_recommendations(user_analysis)
         
         try:
-            prompt = self._build_user_prompt(user_analysis, context)
+            prompt = get_user_analysis_prompt(user_analysis, context)
             response = self._call_openai(prompt, "user_analysis")
             return self._parse_recommendations(response)
         except Exception as e:
             logger.error(f"AI recommendation generation failed: {e}")
             return self._fallback_user_recommendations(user_analysis)
     
-    def generate_group_recommendations(self, group_analysis: Dict, context: Dict = None) -> List[str]:
+    def generate_group_recommendations(self, group_analysis: Dict, context: Optional[Dict] = None) -> List[str]:
         """Generate AI-powered recommendations for a specific group"""
         if not self.enabled:
             return self._fallback_group_recommendations(group_analysis)
         
         try:
-            prompt = self._build_group_prompt(group_analysis, context)
+            prompt = get_group_analysis_prompt(group_analysis, context)
             response = self._call_openai(prompt, "group_analysis")
             return self._parse_recommendations(response)
         except Exception as e:
@@ -77,13 +77,12 @@ class AIRecommendationEngine:
             return self._fallback_global_recommendations(analysis_summary)
         
         try:
-            prompt = self._build_global_prompt(analysis_summary)
+            prompt = get_global_analysis_prompt(analysis_summary)
             response = self._call_openai(prompt, "global_analysis")
             return self._parse_recommendations(response)
         except Exception as e:
             logger.error(f"AI recommendation generation failed: {e}")
             return self._fallback_global_recommendations(analysis_summary)
-    
     def _call_openai(self, prompt: str, analysis_type: str) -> str:
         """Make a call to Azure OpenAI API"""
         headers = {
@@ -91,18 +90,7 @@ class AIRecommendationEngine:
             'Content-Type': 'application/json'
         }
         
-        system_message = f"""You are an expert Microsoft Azure Identity and Access Management consultant specializing in Privileged Identity Management (PIM) and RBAC optimization. 
-
-Your role is to analyze Entra ID environments and provide specific, actionable security recommendations. Focus on:
-- Principle of least privilege
-- Zero trust security model
-- PIM best practices
-- Risk mitigation strategies
-- Compliance requirements (SOX, GDPR, etc.)
-
-Always provide concrete, implementable recommendations. Avoid generic advice. Be specific about Azure AD/Entra ID features and capabilities.
-
-Analysis Type: {analysis_type}"""
+        system_message = get_system_message()
 
         data = {
             'model': self.deployment,
@@ -120,7 +108,7 @@ Analysis Type: {analysis_type}"""
         result = response.json()
         return result['choices'][0]['message']['content']
     
-    def _build_user_prompt(self, user_analysis: Dict, context: Dict = None) -> str:
+    def _build_user_prompt(self, user_analysis: Dict, context: Optional[Dict] = None) -> str:
         """Build a prompt for user-specific analysis"""
         user_name = user_analysis.get('user_name', 'Unknown')
         email = user_analysis.get('user_email', 'Unknown')
@@ -164,7 +152,7 @@ Provide 2-4 specific, actionable recommendations for this user focusing on:
 
 Format as bullet points, each starting with a clear action verb."""
     
-    def _build_group_prompt(self, group_analysis: Dict, context: Dict = None) -> str:
+    def _build_group_prompt(self, group_analysis: Dict, context: Optional[Dict] = None) -> str:
         """Build a prompt for group-specific analysis"""
         group_name = group_analysis.get('group_name', 'Unknown')
         group_type = group_analysis.get('group_type', 'Unknown')
@@ -568,8 +556,7 @@ class PIMAnalyzer:
                 
                 if assignments:
                     logger.info(f"Successfully retrieved {len(assignments)} role assignments using {endpoint}")
-                    
-                    # Try to get expanded data for a subset of assignments
+                  # Try to get expanded data for a subset of assignments
                     expanded_count = 0
                     for assignment in assignments[:50]:  # Only expand first 50 for performance
                         try:
@@ -637,7 +624,7 @@ class PIMAnalyzer:
     
     async def _analyze_users(self, users: List[Dict], role_assignments: List[Dict], 
                            pim_assignments: List[Dict], groups: List[Dict], 
-                           session: aiohttp.ClientSession, context: Dict = None) -> List[UserAnalysis]:
+                           session: aiohttp.ClientSession, context: Optional[Dict] = None) -> List[UserAnalysis]:
         """Analyze each user's permissions and generate recommendations"""
         user_analyses = []
         
@@ -884,11 +871,11 @@ class PIMAnalyzer:
             # Non-IT user with IT roles
             if not user_is_it and any(keyword in role_name_lower for keyword in ['admin', 'developer', 'technical']):
                 return True
-            
-            # Non-HR user with HR roles
+              # Non-HR user with HR roles
             if not user_is_hr and 'user' in role_name_lower and 'administrator' in role_name_lower:
                 continue  # Skip general user admin roles
-            return False
+        
+        return False
     
     def _calculate_group_overlap(self, group: Dict, all_groups: List[Dict]) -> Dict[str, int]:
         """Calculate member overlap between groups, excluding built-in groups like 'All Users'"""
@@ -971,12 +958,11 @@ class PIMAnalyzer:
             # Groups without role assignments
             if not role_assignments and members_count > 0:
                 recommendations.append("Group has members but no role assignments - verify purpose")
-            
-            # High member overlap
+              # High member overlap
             if member_overlap:
                 max_overlap = max(member_overlap.values())
                 if max_overlap > members_count * 0.7:  # 70% overlap (adjusted from 80%)
-                    overlap_group = max(member_overlap, key=member_overlap.get)
+                    overlap_group = max(member_overlap.keys(), key=lambda k: member_overlap[k])
                     recommendations.append(f"Evaluate consolidation with '{overlap_group}' due to high member overlap")
             
             # Large groups with privileged roles
@@ -1126,7 +1112,7 @@ class PIMAnalyzer:
             'average_roles_per_user': sum(len(ua.active_roles) + len(ua.eligible_roles) for ua in user_analyses) / len(user_analyses) if user_analyses else 0
         }
     
-    def export_report(self, report: AnalysisReport, filename: str = None) -> str:
+    def export_report(self, report: AnalysisReport, filename: Optional[str] = None) -> str:
         """Export analysis report to JSON file"""
         if not filename:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

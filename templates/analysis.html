@@ -10,21 +10,21 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
-        body {
+          body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a1c2c 0%, #2d3748 100%);
             min-height: 100vh;
             padding: 20px;
             transition: background 0.3s ease;
+            color: #e2e8f0;
         }
         
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            background: white;
+            background: #2d3748;
             border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
             overflow: hidden;
             transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
@@ -96,17 +96,17 @@
         .dashboard {
             padding: 30px;
         }
-        
-        .status-card {
-            background: #f8f9fa;
+          .status-card {
+            background: #4a5568;
             border-radius: 10px;
             padding: 25px;
             margin-bottom: 30px;
-            border-left: 5px solid #007bff;
+            border-left: 5px solid #63b3ed;
+            color: #e2e8f0;
         }
         
         .status-card h3 {
-            color: #2c3e50;
+            color: #ffffff;
             margin-bottom: 15px;
             font-size: 1.3em;
         }
@@ -196,6 +196,16 @@
             transform: translateY(-2px);
         }
         
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+            transform: translateY(-2px);
+        }
+        
         .btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
@@ -269,41 +279,63 @@
             letter-spacing: 1.5px;
             font-weight: 600;
         }
-        
-        body.dark-mode .metric-card {
-            box-shadow: 0 8px 15px rgba(0,0,0,0.25);
+          /* Light mode styles */
+        body.light-mode {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
         }
         
-        body.dark-mode .metric-card.users {
-            background: linear-gradient(145deg, #2d3748, #2a4365);
+        body.light-mode .container {
+            background: white;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
         
-        body.dark-mode .metric-card.groups {
-            background: linear-gradient(145deg, #2d3748, #2d3f2b);
+        body.light-mode .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
         }
         
-        body.dark-mode .metric-card.roles {
-            background: linear-gradient(145deg, #2d3748, #285e6a);
+        body.light-mode .status-card {
+            background: #f8f9fa;
+            color: #2c3e50;
         }
         
-        body.dark-mode .metric-card.risk {
-            background: linear-gradient(145deg, #2d3748, #442a2d);
+        body.light-mode .status-card h3 {
+            color: #2c3e50;
         }
         
-        body.dark-mode .metric-value {
-            color: #ffffff;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        body.light-mode .metric-card {
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
         }
         
-        body.dark-mode .metric-label {
-            color: #e2e8f0;
+        body.light-mode .metric-card.users {
+            background: linear-gradient(145deg, #ffffff, #f0f7ff);
         }
         
-        .tabs {
+        body.light-mode .metric-card.groups {
+            background: linear-gradient(145deg, #ffffff, #f0fff5);
+        }
+        
+        body.light-mode .metric-card.roles {
+            background: linear-gradient(145deg, #ffffff, #f0faff);
+        }
+        
+        body.light-mode .metric-card.risk {
+            background: linear-gradient(145deg, #ffffff, #fff5f5);
+        }
+        
+        body.light-mode .metric-value {
+            color: #2c3e50;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        body.light-mode .metric-label {
+            color: #495057;
+        }
+          .tabs {
             display: flex;
-            border-bottom: 2px solid #e9ecef;
+            border-bottom: 2px solid #4a5568;
             margin-bottom: 25px;
-            background-color: rgba(255, 255, 255, 0.7);
+            background-color: rgba(45, 55, 72, 0.7);
             border-radius: 8px 8px 0 0;
             overflow: hidden;
         }
@@ -314,41 +346,40 @@
             border-bottom: 3px solid transparent;
             transition: all 0.3s ease;
             font-weight: 600;
-            color: #495057;
+            color: #e2e8f0;
             display: flex;
             align-items: center;
             gap: 6px;
         }
         
         .tab.active {
-            border-bottom-color: #007bff;
-            color: #007bff;
-            background-color: rgba(0, 123, 255, 0.1);
-        }
-        
-        .tab:hover {
-            background: #f8f9fa;
-            color: #0056b3;
-        }
-        
-        body.dark-mode .tabs {
-            background-color: rgba(45, 55, 72, 0.7);
-            border-bottom-color: #4a5568;
-        }
-        
-        body.dark-mode .tab {
-            color: #e2e8f0;
-        }
-        
-        body.dark-mode .tab.active {
-            color: #63b3ed;
             border-bottom-color: #63b3ed;
+            color: #63b3ed;
             background-color: rgba(99, 179, 237, 0.1);
         }
         
-        body.dark-mode .tab:hover {
+        .tab:hover {
             background: #2d3748;
             color: #90cdf4;
+        }
+          body.light-mode .tabs {
+            background-color: rgba(255, 255, 255, 0.7);
+            border-bottom-color: #e9ecef;
+        }
+        
+        body.light-mode .tab {
+            color: #495057;
+        }
+        
+        body.light-mode .tab.active {
+            color: #007bff;
+            border-bottom-color: #007bff;
+            background-color: rgba(0, 123, 255, 0.1);
+        }
+        
+        body.light-mode .tab:hover {
+            background: #f8f9fa;
+            color: #0056b3;
         }
         
         .data-table {
@@ -470,6 +501,21 @@
             color: white;
         }
         
+        .auth-status, .analysis-status {
+            margin-bottom: 15px;
+            padding: 10px 0;
+        }
+        
+        .auth-status {
+            border-bottom: 1px solid #2d3748;
+            margin-bottom: 15px;
+        }
+        
+        .auth-status .status-indicator.status-authenticated {
+            background: #48bb78;
+            color: white;
+        }
+        
         @media (max-width: 768px) {
             .action-buttons {
                 flex-direction: column;
@@ -505,14 +551,21 @@
         
         <div class="dashboard">
             <div class="status-card">
-                <h3>Analysis Status</h3>
-                <div id="status-content">
-                    <span id="status-indicator" class="status-indicator status-none">No Analysis</span>
-                    <span id="status-text">No analysis has been performed yet.</span>
+                <h3>Analysis Status</h3>                <div id="status-content">
+                    <div class="auth-status">
+                        <span id="auth-indicator" class="status-indicator status-none">Not Authenticated</span>
+                        <span id="auth-text">Please authenticate with Azure AD first.</span>
+                    </div>
+                    <div class="analysis-status">
+                        <span id="status-indicator" class="status-indicator status-none">No Analysis</span>
+                        <span id="status-text">No analysis has been performed yet.</span>
+                    </div>
                 </div>
-                
-                <div class="action-buttons">
-                    <button id="start-analysis" class="btn btn-primary">
+                  <div class="action-buttons">
+                    <button id="authenticate" class="btn btn-secondary">
+                        🔐 Authenticate with Azure AD
+                    </button>
+                    <button id="start-analysis" class="btn btn-primary" disabled>
                         🔍 Start Comprehensive Analysis
                     </button>
                     <button id="refresh-status" class="btn btn-info">
@@ -576,9 +629,10 @@
                 this.statusCheckInterval = null;
                 this.initializeEventListeners();
                 this.checkStatus();
+                this.checkAuthStatus();
             }
             
-            initializeEventListeners() {
+            initializeEventListeners() {                document.getElementById('authenticate').addEventListener('click', () => this.authenticate());
                 document.getElementById('start-analysis').addEventListener('click', () => this.startAnalysis());
                 document.getElementById('refresh-status').addEventListener('click', () => this.checkStatus());
                 document.getElementById('view-results').addEventListener('click', () => this.loadResults());
@@ -595,8 +649,7 @@
                 // Theme toggle
                 document.querySelector('.theme-toggle').addEventListener('click', () => this.toggleTheme());
             }
-            
-            async startAnalysis() {
+              async startAnalysis() {
                 const startBtn = document.getElementById('start-analysis');
                 startBtn.disabled = true;
                 startBtn.textContent = '🔄 Starting Analysis...';
@@ -611,6 +664,11 @@
                     if (result.status === 'started') {
                         this.showMessage('Analysis started successfully! This may take several minutes.', 'success');
                         this.startStatusPolling();
+                    } else if (result.require_auth) {
+                        this.showMessage('Authentication required. Please authenticate with Azure AD first.', 'warning');
+                        document.getElementById('authenticate').style.display = 'inline-block';
+                        startBtn.disabled = false;
+                        startBtn.textContent = '🔍 Start Comprehensive Analysis';
                     } else {
                         this.showMessage(`Failed to start analysis: ${result.message}`, 'error');
                         startBtn.disabled = false;
@@ -1009,59 +1067,123 @@
                     this.showMessage(`Error exporting results: ${error.message}`, 'error');
                 }
             }
-            
-            goBack() {
-                // Implement the back navigation logic here
-                window.history.back();
+              async authenticate() {
+                const authBtn = document.getElementById('authenticate');
+                authBtn.disabled = true;
+                authBtn.textContent = '🔄 Authenticating...';
+                
+                // Show an informational message about console interaction
+                this.showMessage('🔍 Starting authentication... Please check the console/terminal for authentication code!', 'info');
+                
+                try {
+                    const response = await fetch('/auth/authenticate', {
+                        method: 'POST'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        this.showMessage(`✅ Authentication successful! Token acquired (${result.token_length} chars)`, 'success');
+                        this.updateAuthStatus(true);
+                        authBtn.style.display = 'none'; // Hide auth button after success
+                        document.getElementById('start-analysis').disabled = false;
+                    } else {
+                        this.showMessage(`❌ Authentication failed: ${result.message}`, 'error');
+                        authBtn.disabled = false;
+                        authBtn.textContent = '🔐 Authenticate with Azure AD';
+                    }
+                } catch (error) {
+                    this.showMessage(`Authentication error: ${error.message}`, 'error');
+                    authBtn.disabled = false;
+                    authBtn.textContent = '🔐 Authenticate with Azure AD';
+                }
             }
             
-            toggleTheme() {
-                const body = document.body;
-                body.classList.toggle('dark-mode');
-                
-                const isDarkMode = body.classList.contains('dark-mode');
-                
-                // Update styles for dark mode
-                body.style.backgroundColor = isDarkMode ? '#121212' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                body.style.color = isDarkMode ? '#e0e0e0' : '#333';
-                
-                // Update header styles
-                const header = document.querySelector('.header');
-                header.style.background = isDarkMode ? '#1f1f1f' : 'linear-gradient(135deg, #2c3e50 0%, #3498db 100%)';
-                
-                // Update card styles
-                const cards = document.querySelectorAll('.status-card, .metric-card, .data-table, .recommendations-list');
-                cards.forEach(card => {
-                    card.style.background = isDarkMode ? '#2c2c2c' : 'white';
-                    card.style.color = isDarkMode ? '#e0e0e0' : '#333';
-                });
-                
-                // Update button styles
-                const buttons = document.querySelectorAll('.btn, .back-button, .theme-toggle');
-                buttons.forEach(btn => {
-                    btn.style.background = isDarkMode ? '#007bff' : '#007bff';
-                    btn.style.color = isDarkMode ? 'white' : 'white';
-                });
-                
-                // Update table styles
-                const tables = document.querySelectorAll('.data-table th');
-                tables.forEach(th => {
-                    th.style.background = isDarkMode ? '#3a3a3a' : '#f8f9fa';
-                    th.style.color = isDarkMode ? '#e0e0e0' : '#495057';
-                });
+            async checkAuthStatus() {
+                try {
+                    const response = await fetch('/auth/status');
+                    const status = await response.json();
+                    this.updateAuthStatus(status.authenticated);
+                    
+                    if (status.authenticated) {
+                        document.getElementById('authenticate').style.display = 'none';
+                        document.getElementById('start-analysis').disabled = false;
+                    }
+                } catch (error) {
+                    console.error('Error checking auth status:', error);
+                }
             }
             
-            showMessage(message, type) {
+            updateAuthStatus(authenticated) {
+                const indicator = document.getElementById('auth-indicator');
+                const text = document.getElementById('auth-text');
+                
+                if (authenticated) {
+                    indicator.className = 'status-indicator status-authenticated';
+                    indicator.textContent = 'Authenticated';
+                    text.textContent = 'Successfully authenticated with Azure AD.';
+                } else {
+                    indicator.className = 'status-indicator status-none';
+                    indicator.textContent = 'Not Authenticated';
+                    text.textContent = 'Please authenticate with Azure AD first.';
+                }
+            }
+            
+            showMessage(message, type = 'info') {
+                // Create message element
                 const messageDiv = document.createElement('div');
-                messageDiv.className = type;
+                messageDiv.className = `message message-${type}`;
+                messageDiv.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 1000;
+                    max-width: 400px;
+                    word-wrap: break-word;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                `;
+                
+                // Set background color based on type
+                switch(type) {
+                    case 'success':
+                        messageDiv.style.backgroundColor = '#28a745';
+                        break;
+                    case 'error':
+                        messageDiv.style.backgroundColor = '#dc3545';
+                        break;
+                    case 'warning':
+                        messageDiv.style.backgroundColor = '#ffc107';
+                        messageDiv.style.color = '#000';
+                        break;
+                    case 'info':
+                        messageDiv.style.backgroundColor = '#17a2b8';
+                        break;
+                    default:
+                        messageDiv.style.backgroundColor = '#6c757d';
+                }
+                
                 messageDiv.textContent = message;
                 
-                const dashboard = document.querySelector('.dashboard');
-                dashboard.insertBefore(messageDiv, dashboard.firstChild);
+                // Add to page
+                document.body.appendChild(messageDiv);
                 
+                // Auto-remove after 5 seconds
                 setTimeout(() => {
-                    messageDiv.remove();
+                    if (messageDiv.parentNode) {
+                        messageDiv.parentNode.removeChild(messageDiv);
+                    }
                 }, 5000);
+                
+                // Allow manual close on click
+                messageDiv.addEventListener('click', () => {
+                    if (messageDiv.parentNode) {
+                        messageDiv.parentNode.removeChild(messageDiv);
+                    }
+                });
             }
         }
         
